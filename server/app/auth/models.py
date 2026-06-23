@@ -26,7 +26,6 @@ class User(Base):
     registration_number = Column(VARCHAR(50), unique=True, nullable=False, index=True)
     name = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
     role = Column(Enum(RoleEnum), default=RoleEnum.user)
     department = Column(VARCHAR(100))
     joined_at = Column(TIMESTAMP, default=datetime.now)
