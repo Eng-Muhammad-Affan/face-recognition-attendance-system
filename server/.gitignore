@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.env
+
+# Virtualenv
+venv/
+.env
+.env.*
+.venv/
+
+# Alembic
+alembic/versions/*.pyc
+
+# IDEs and Editors
+.vscode/
+
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*logs/
+
+# PostgreSQL dumps
+*.sql
+
+# Sensitive Configs
+*.secret
+*.bak
+*.db
+
+# Postman
+postman/fastapi-ecommerce.postman_collection.json
+
+# Migrations 
+alembic.ini
+
+
