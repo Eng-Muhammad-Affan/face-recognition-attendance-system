@@ -20,6 +20,5 @@ export const SignupSchema = z.object({
             (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
             "Only .jpg, .jpeg, .png and .webp formats are supported."
         )
-        .optional() // Make it optional if you want to allow no file
         .refine((file) => file !== undefined, "File is required.") // Add this for required
 }).strict()

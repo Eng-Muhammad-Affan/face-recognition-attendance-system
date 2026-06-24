@@ -16,6 +16,8 @@ from fastapi.exceptions import HTTPException
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.vector import enable_pgvector_extension
+
 app = FastAPI()
 
 
@@ -43,6 +45,8 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     return response
 
+
+enable_pgvector_extension(engine)
 Base.metadata.create_all(bind=engine)  # Create tables
 
 @app.get("/")

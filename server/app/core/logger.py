@@ -1,37 +1,3 @@
-# # app/core/logger.py
-# import logging
-# import os
-# import sys
-
-# # Create logger
-# logger = logging.getLogger("ecommerce")
-# logger.setLevel(logging.INFO)
-
-# # Formatter
-# formatter = logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s")
-
-# # Stream handler (console) - Vercel captures this automatically
-# stream_handler = logging.StreamHandler(sys.stdout)
-# stream_handler.setFormatter(formatter)
-# logger.addHandler(stream_handler)
-
-# # Keep the file handler only for local development
-# if not os.environ.get('VERCEL'):
-#     from logging.handlers import RotatingFileHandler
-#     log_dir = "logs"
-#     os.makedirs(log_dir, exist_ok=True)
-#     file_handler = RotatingFileHandler(
-#         os.path.join(log_dir, "app.log"), 
-#         maxBytes=1000000, 
-#         backupCount=3
-#     )
-#     file_handler.setFormatter(formatter)
-#     logger.addHandler(file_handler)
-
-# # Prevent duplicate log entries
-# logger.propagate = False
-
-
 # app/core/logger.py
 import logging
 import os

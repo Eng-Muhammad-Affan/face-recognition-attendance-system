@@ -1,6 +1,9 @@
 # app/models.py
 from sqlalchemy import Column, String, Enum, VARCHAR, TIMESTAMP, Date, Boolean, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID, VECTOR  # IMPORTANT: Use VECTOR from pgvector
+from sqlalchemy.dialects.postgresql import UUID
+
+from pgvector.sqlalchemy import Vector  # or VECTOR
+
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
@@ -45,7 +48,7 @@ class FaceEmbedding(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     student_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    embedding = Column(VECTOR(512), nullable=False)  # pgvector type
+    embedding = Column(Vector(512), nullable=False)  # pgvector type
     is_active = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP, default=datetime.now)
     

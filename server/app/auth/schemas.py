@@ -1,21 +1,37 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from enum import Enum
 from uuid import UUID
+from typing import Optional
+from fastapi import UploadFile
 
 class RoleEnum(str, Enum):
     admin = "admin"
     user = "user"
 
+
 class UserSignup(BaseModel):
-    name: str = Field(..., min_length=2)
+    name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
-    password: str = Field(..., min_length=6)
+    department: str = Field(..., min_length=2, max_length=100)
+    image: Optional[UploadFile] = None  # or you can make it required
 
     @field_validator("email")
     def validate_gmail(cls, v):
         if not v.endswith("@gmail.com"):
             raise ValueError("Only @gmail.com emails are allowed")
-        return v 
+        return v
+
+    @field_validator("name")
+    def validate_name(cls, v):
+        if not v.strip():
+            raise ValueError("Name cannot be empty or only spaces")
+        return v.strip()
+
+    @field_validator("department")
+    def validate_department(cls, v):
+        if not v.strip():
+            raise ValueError("Department cannot be empty or only spaces")
+        return v.strip()
 
 class UserOut(BaseModel):
     id: UUID

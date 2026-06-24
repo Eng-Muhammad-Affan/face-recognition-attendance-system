@@ -1,10 +1,13 @@
 # app/api/auth_router.py
-from fastapi import APIRouter, Depends, HTTPException, Response, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Response, status, BackgroundTasks , Form , UploadFile, File
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from . import schemas, models, utils
 from .schemas import UserSignin
 from app.auth.models import User
+from app.auth.models import FaceEmbedding
+
+from app.auth.generate_random import generate_registration_number 
 
 from app.auth.utils import (
     verify_password,
@@ -26,6 +29,8 @@ from typing import Annotated
 from pydantic import BaseModel, StringConstraints
 import secrets
 
+from app.services.face_service import FaceExtractor 
+
 from rich import print
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -38,38 +43,85 @@ def get_db():
     finally:
         db.close()
 
+face_service = FaceExtractor()
+
 
 # ============ PUBLIC ROUTES (No auth required) ============
 
-@router.post("/signup", response_model=schemas.UserOut, status_code=201)
-def signup(
-    user_data: schemas.UserSignup, 
-    response: Response,  # 1. Add the response object here
-    db: Session = Depends(get_db)
+@router.post("/signup",  status_code=201)
+async def signup(
+    name: str = Form(...),
+    email: str = Form(...),
+    department: str = Form(...),
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
-        logger.info(f"User Already Exists During Signup: {user_data.email}")
-        raise HTTPException(status_code=409, detail="Email already registered")
+    print(name)
+    print(email)
+    print(department)
+    print(image)
 
-    hashed_password = hash_password(user_data.password)
+    existing_user = db.query(User).filter(User.email == email).first()
+    
+    if existing_user:
+        logger.info(f"User Already Exists During Signup: {email}")
+        raise HTTPException(status_code=409, detail="Email already registered")
+    
+    """Register a new student with face image"""
+    
+    # STEP 1: Extract embedding from uploaded file
+    embedding = await face_service.extract_embedding_from_file(image)
+    
+    if embedding is None:
+        raise HTTPException(400, "No face detected")
+    
+    # STEP 2: Create user in database
     new_user = User(
-        name=user_data.name,
-        email=user_data.email,
-        hashed_password=hashed_password,
-        role="user"
+        registration_number=generate_registration_number(),
+        name=name,
+        email=email,
+        hashed_password="hashed_password_here"  # Add password hashing
     )
     db.add(new_user)
+    db.flush()  # Get user.id without committing
+    
+    # STEP 3: Save embedding to pgvector
+    face_embedding = FaceEmbedding(
+        student_id=new_user.id,
+        embedding=embedding.tolist()  # Convert numpy array to list
+    )
+    db.add(face_embedding)
+    
+    # STEP 4: Commit everything
     db.commit()
     db.refresh(new_user)
     
-    # 2. GENERATE TOKEN & SET COOKIE (Add these lines)
-    token = create_access_token(user_id=new_user.id , role=new_user.role)
-    set_token_cookie(response, token)
+    return {
+        "status": "success",
+        "student_id": new_user.id,
+        "registration_number": new_user.registration_number,
+        "name": new_user.name,
+        "embedding_dimension": len(embedding)
+    }
+
+
+    # ----
+    # new_user = User(
+    #     name=user_data.name,
+    #     email=user_data.email,
+    #     role="user"
+    # )
+    # db.add(new_user)
+    # db.commit()
+    # db.refresh(new_user)
     
-    logger.info(f"New signup and auto-login: {user_data.email}")
+    # # 2. GENERATE TOKEN & SET COOKIE (Add these lines)
+    # token = create_access_token(user_id=new_user.id , role=new_user.role)
+    # set_token_cookie(response, token)
     
-    return new_user
+    # logger.info(f"New signup and auto-login: {user_data.email}")
+    
+    # return new_user
 
 
 ### sign in route 

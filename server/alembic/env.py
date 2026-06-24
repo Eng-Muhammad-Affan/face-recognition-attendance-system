@@ -10,7 +10,6 @@ load_dotenv()
 from app.core.config import settings
 from app.core.database import Base
 
-# Import all models here so Base.metadata knows about them
 from app.auth.models import User
 
 
