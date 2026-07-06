@@ -7,9 +7,15 @@ from typing import Optional, List
 class FaceExtractor:
     def __init__(self):
         # Initialize InsightFace model
-        self.model = insightface.app.FaceAnalysis(name='buffalo_l')
+        self.model = insightface.app.FaceAnalysis(name='buffalo_m')
         self.model.prepare(ctx_id=0, det_size=(640, 640))
     
+    async def extract_embedding_from_file(self, image_file:UploadFile):
+        faces = self.model.get(image_file)
+        
+        if len(faces):
+            pass
+             
     async def extract_faces(self, file: UploadFile) -> List[np.ndarray]:
         """Extract all faces from uploaded image as cropped images"""
         
