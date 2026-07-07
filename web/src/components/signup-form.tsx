@@ -16,6 +16,7 @@ import { useState, useRef } from "react"
 import { X } from "lucide-react"
 
 type SignupFormData = z.infer<typeof SignupSchema>
+const api_url = process.env.NEXT_PUBLIC_API_URL as string;
 
 export function SignupForm({
   className,
@@ -72,7 +73,7 @@ export function SignupForm({
     formData.append("image", data.file)
 
     try {
-      const response = await fetch("http://localhost:8000/auth/signup",
+      const response = await fetch(`${api_url}/auth/signup`,
         {
           method: "POST",
           body: formData,

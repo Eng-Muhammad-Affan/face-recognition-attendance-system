@@ -1,175 +1,400 @@
+
+# import insightface
+# import cv2
+# import numpy as np
+# from fastapi import UploadFile
+# from typing import Optional, Tuple
+# import logging
+# from sklearn.metrics.pairwise import cosine_similarity  # Recommended approach
+
+# logger = logging.getLogger(__name__)
+
+# class FaceService:
+#     def __init__(self):
+#         """Initialize InsightFace model for face detection and recognition"""
+#         self.model = insightface.app.FaceAnalysis(name='buffalo_m')  # Use buffalo_l for better accuracy with twins
+#         self.model.prepare(ctx_id=0, det_size=(640, 640))
+    
+#     # ============ CORE PRIVATE METHODS (Internal Use Only) ============
+    
+#     def _decode_image(self, file: UploadFile) -> Optional[np.ndarray]:
+#         """
+#         Decode uploaded file to OpenCV image format.
+        
+#         Returns:
+#             np.ndarray: Decoded image
+#             None: If decoding fails
+#         """
+#         image_bytes = file.file.read()
+#         nparr = np.frombuffer(image_bytes, np.uint8)
+#         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+#         if img is None:
+#             logger.error("Failed to decode image")
+#             return None
+        
+#         return img
+    
+#     def _get_single_face(self, img: np.ndarray) -> Tuple[np.ndarray, dict]:
+#         """
+#         Detect exactly one face in the image.
+        
+#         Returns:
+#             Tuple of (face_object, face_info)
+            
+#         Raises:
+#             ValueError: If no face or multiple faces detected
+#         """
+#         faces = self.model.get(img)
+        
+#         if len(faces) == 0:
+#             raise ValueError("No face detected in the image")
+        
+#         if len(faces) > 1:
+#             raise ValueError(f"Multiple faces detected ({len(faces)} faces). Please provide an image with exactly one face.")
+        
+#         face = faces[0]
+#         face_info = {
+#             'bbox': face.bbox.astype(int),
+#             'landmarks': face.landmark_2d_106 if hasattr(face, 'landmark_2d_106') else None,
+#             'detection_score': face.det_score if hasattr(face, 'det_score') else None
+#         }
+        
+#         return face, face_info
+    
+#     def _crop_face(self, img: np.ndarray, bbox: np.ndarray, padding: int = 10) -> np.ndarray:
+#         """
+#         Crop face from image using bounding box.
+        
+#         Args:
+#             img: Source image
+#             bbox: [x1, y1, x2, y2] bounding box
+#             padding: Additional pixels around face (default: 10)
+        
+#         Returns:
+#             Cropped face image
+#         """
+#         x1, y1, x2, y2 = bbox
+        
+#         # Apply padding with bounds checking
+#         h, w = img.shape[:2]
+#         x1 = max(0, x1 - padding)
+#         y1 = max(0, y1 - padding)
+#         x2 = min(w, x2 + padding)
+#         y2 = min(h, y2 + padding)
+        
+#         return img[y1:y2, x1:x2]
+    
+#     # ============ PUBLIC METHODS (For External Use) ============
+    
+#     async def detect_face(self, file: UploadFile) -> dict:
+#         """
+#         Detect exactly one face in the uploaded image.
+#         Returns face information and cropped face image.
+        
+#         Use this when you need to verify there's exactly one face.
+        
+#         Returns:
+#             {
+#                 'cropped_face': np.ndarray,    # Cropped face image
+#                 'bbox': [x1, y1, x2, y2],      # Bounding box
+#                 'landmarks': np.ndarray,       # Facial landmarks
+#                 'detection_score': float       # Confidence score
+#             }
+        
+#         Raises:
+#             ValueError: If no face or multiple faces detected
+#         """
+#         # Decode image
+#         img = self._decode_image(file)
+#         if img is None:
+#             raise ValueError("Invalid image file")
+        
+#         # Get single face
+#         face, face_info = self._get_single_face(img)
+        
+#         # Crop the face
+#         cropped_face = self._crop_face(img, face_info['bbox'])
+        
+#         return {
+#             'cropped_face': cropped_face,
+#             'bbox': face_info['bbox'],
+#             'landmarks': face_info['landmarks'],
+#             'detection_score': face_info['detection_score']
+#         }
+    
+#     async def extract_embedding(self, file: UploadFile) -> np.ndarray:
+#         """
+#         Extract face embedding (512-dim vector) from uploaded image.
+        
+#         Use this for:
+#         - Storing face in database (signup)
+#         - Comparing faces (attendance)
+        
+#         Returns:
+#             np.ndarray: Embedding vector of shape (512,)
+            
+#         Raises:
+#             ValueError: If no face or multiple faces detected
+#         """
+#         # Decode image
+#         img = self._decode_image(file)
+#         if img is None:
+#             raise ValueError("Invalid image file")
+        
+#         # Get single face
+#         face, _ = self._get_single_face(img)
+        
+#         # Return normalized embedding
+#         return face.normed_embedding
+    
+#     async def extract_embedding_from_face(self, cropped_face: np.ndarray) -> np.ndarray:
+#         """
+#         Extract embedding from an already cropped face image.
+        
+#         Use this when you already have the face image and just need the embedding.
+        
+#         Returns:
+#             np.ndarray: Embedding vector of shape (512,)
+            
+#         Raises:
+#             ValueError: If no face detected in the cropped image
+#         """
+#         # Get single face from cropped image
+#         face, _ = self._get_single_face(cropped_face)
+        
+#         # Return normalized embedding
+#         return face.normed_embedding
+    
+# import numpy as np
+# from sklearn.metrics.pairwise import cosine_similarity  # Recommended approach
+
+# def compare_embeddings(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
+#     """
+#     Calculate cosine similarity between two embeddings.
+    
+#     Returns:
+#         float: Similarity score between -1 and 1 (higher = more similar)
+#     """
+#     # Ensure embeddings are 2D arrays
+#     if embedding1.ndim == 1:
+#         embedding1 = embedding1.reshape(1, -1)
+#     if embedding2.ndim == 1:
+#         embedding2 = embedding2.reshape(1, -1)
+    
+#     # Method 1: Using sklearn (recommended)
+#     from sklearn.metrics.pairwise import cosine_similarity
+#     similarity = cosine_similarity(embedding1, embedding2)
+#     return float(similarity[0][0])
+    
+#     # OR Method 2: Manual calculation (your approach - fixed)
+#     # similarity = np.dot(embedding1, embedding2.T) / (
+#     #     np.linalg.norm(embedding1) * np.linalg.norm(embedding2)
+#     # )
+#     # return float(similarity.flatten()[0])
+
+    
+#     def get_embedding_for_storage(self, embedding: np.ndarray) -> list:
+#         """
+#         Convert embedding to format suitable for database storage (pgvector).
+        
+#         Use this before saving to database.
+        
+#         Returns:
+#             list: Embedding as a Python list
+#         """
+#         return embedding.tolist()
+    
+#     def get_embedding_from_storage(self, stored_embedding: list) -> np.ndarray:
+#         """
+#         Convert stored embedding from database back to numpy array.
+        
+#         Use this when retrieving embeddings from database.
+        
+#         Returns:
+#             np.ndarray: Embedding as numpy array
+#         """
+#         return np.array(stored_embedding)
+
 import insightface
 import cv2
 import numpy as np
 from fastapi import UploadFile
-from typing import Optional, List, Union
+from typing import Optional, Tuple
 import logging
+from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
 
-class FaceExtractor:
+class FaceService:
     def __init__(self):
-        # Initialize InsightFace model
+        """Initialize InsightFace model for face detection and recognition"""
+        logger.info("Initializing FaceService with buffalo_m model")
         self.model = insightface.app.FaceAnalysis(name='buffalo_m')
         self.model.prepare(ctx_id=0, det_size=(640, 640))
+        logger.info("FaceService initialized successfully")
     
-    async def extract_faces(self, file: UploadFile) -> List[np.ndarray]:
-        """Extract all faces from uploaded image as cropped images"""
-        
-        # Read the uploaded file
-        image_bytes = await file.read()
+    # ============ CORE PRIVATE METHODS (Internal Use Only) ============
+    
+    def _decode_image(self, file: UploadFile) -> Optional[np.ndarray]:
+        """Decode uploaded file to OpenCV image format."""
+        image_bytes = file.file.read()
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
         if img is None:
-            return []
+            logger.error("Failed to decode image")
+            return None
         
-        # Detect faces
+        logger.info(f"Image decoded successfully. Shape: {img.shape}")
+        return img
+    
+    def _get_single_face(self, img: np.ndarray) -> Tuple[np.ndarray, dict]:
+        """Detect exactly one face in the image."""
+        logger.info("Detecting faces in image...")
         faces = self.model.get(img)
+        logger.info(f"Number of faces detected: {len(faces)}")
         
         if len(faces) == 0:
-            return []
-        elif len(faces) > 1:
-            # ✅ Raise exception instead of returning string
-            raise ValueError("Too many faces detected")
+            logger.error("No face detected in the image")
+            raise ValueError("No face detected in the image")
         
-        # Extract each face as a cropped image
-        cropped_faces = []
-        for face in faces:
-            # Get bounding box coordinates
-            bbox = face.bbox.astype(int)  # [x1, y1, x2, y2]
-            x1, y1, x2, y2 = bbox
-            
-            # Add some padding (optional)
-            padding = 10
-            x1 = max(0, x1 - padding)
-            y1 = max(0, y1 - padding)
-            x2 = min(img.shape[1], x2 + padding)
-            y2 = min(img.shape[0], y2 + padding)
-            
-            # Crop the face
-            cropped_face = img[y1:y2, x1:x2]
-            cropped_faces.append(cropped_face)
-        
-        return cropped_faces
-    
-    async def extract_embedding(self, file: UploadFile) -> Optional[np.ndarray]:
-        """Extract face embedding (512-dim vector) from uploaded image"""
-        
-        # Read and decode image
-        image_bytes = await file.read()
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if img is None:
-            return None
-        
-        # Detect faces
-        faces = self.model.get(img)
-        
-        if len(faces) == 0:
-            logger.warning("No face detected in image")
-            return None
-        elif len(faces) > 1:
-            raise ValueError("Too many faces detected")
-        
-        # ✅ Get the embedding (1D vector of shape 512)
-        face = faces[0]
-        embedding = face.normed_embedding  # numpy array of shape (512,)
-        
-        logger.info(f"Extracted embedding with shape: {embedding.shape}")
-        return embedding
-    
-    async def extract_single_face(self, file: UploadFile) -> Optional[np.ndarray]:
-        """Extract the first detected face only (cropped image)"""
-        
-        faces = await self.extract_faces(file)
-        return faces[0] if faces else None
-    
-    async def extract_single_face_with_embedding(self, file: UploadFile) -> dict:
-        """Extract both cropped face and embedding"""
-        
-        # Read image once
-        image_bytes = await file.read()
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if img is None:
-            return None
-        
-        # Detect faces
-        faces = self.model.get(img)
-        
-        if len(faces) == 0:
-            return None
-        elif len(faces) > 1:
-            raise ValueError("Too many faces detected")
+        if len(faces) > 1:
+            logger.error(f"Multiple faces detected: {len(faces)}")
+            raise ValueError(f"Multiple faces detected ({len(faces)} faces). Please provide an image with exactly one face.")
         
         face = faces[0]
         
-        # Get embedding
-        embedding = face.normed_embedding
+        # CRITICAL LOGS - Check if embedding exists
+        logger.info(f"Face detected with score: {face.det_score if hasattr(face, 'det_score') else 'N/A'}")
+        logger.info(f"Has normed_embedding: {hasattr(face, 'normed_embedding')}")
         
-        # Get cropped face
-        bbox = face.bbox.astype(int)
-        x1, y1, x2, y2 = bbox
-        padding = 10
-        x1 = max(0, x1 - padding)
-        y1 = max(0, y1 - padding)
-        x2 = min(img.shape[1], x2 + padding)
-        y2 = min(img.shape[0], y2 + padding)
-        cropped_face = img[y1:y2, x1:x2]
+        if hasattr(face, 'normed_embedding'):
+            logger.info(f"Embedding shape: {face.normed_embedding.shape}")
+            logger.info(f"Embedding dtype: {face.normed_embedding.dtype}")
+            logger.info(f"Embedding sample (first 5): {face.normed_embedding[:5]}")
+            logger.info(f"Embedding min/max: {face.normed_embedding.min():.4f}/{face.normed_embedding.max():.4f}")
+        else:
+            logger.error("NO EMBEDDING FOUND! Model might not be extracting embeddings!")
         
+        face_info = {
+            'bbox': face.bbox.astype(int),
+            'landmarks': face.landmark_2d_106 if hasattr(face, 'landmark_2d_106') else None,
+            'detection_score': face.det_score if hasattr(face, 'det_score') else None
+        }
+        
+        return face, face_info
+    
+    # ============ PUBLIC METHODS ============
+    
+    async def detect_face(self, file: UploadFile) -> dict:
+        """Detect exactly one face in the uploaded image."""
+        logger.info("Starting face detection...")
+        img = self._decode_image(file)
+        if img is None:
+            raise ValueError("Invalid image file")
+        
+        face, face_info = self._get_single_face(img)
+        cropped_face = self._crop_face(img, face_info['bbox'])
+        
+        logger.info("Face detection completed successfully")
         return {
-            'embedding': embedding,      # Shape (512,)
-            'cropped_face': cropped_face,  # Shape (H, W, 3)
-            'bbox': bbox,
+            'cropped_face': cropped_face,
+            'bbox': face_info['bbox'],
+            'landmarks': face_info['landmarks'],
+            'detection_score': face_info['detection_score']
         }
     
-    def extract_faces_from_bytes(self, image_bytes: bytes) -> List[np.ndarray]:
-        """Extract faces from bytes without async"""
+    async def extract_embedding(self, file: UploadFile) -> np.ndarray:
+        """Extract face embedding from uploaded image."""
+        logger.info("Starting embedding extraction...")
         
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        # Reset file pointer before reading
+        await file.seek(0)
         
+        img = self._decode_image(file)
         if img is None:
-            return []
+            raise ValueError("Invalid image file")
         
-        faces = self.model.get(img)
+        face, _ = self._get_single_face(img)
         
-        if len(faces) == 0:
-            return []
+        # CRITICAL CHECK
+        if not hasattr(face, 'normed_embedding'):
+            logger.error("CRITICAL: No normed_embedding attribute on face object!")
+            raise ValueError("Failed to extract face embedding")
         
-        cropped_faces = []
-        for face in faces:
-            bbox = face.bbox.astype(int)
-            x1, y1, x2, y2 = bbox
-            
-            # Add padding
-            padding = 10
-            x1 = max(0, x1 - padding)
-            y1 = max(0, y1 - padding)
-            x2 = min(img.shape[1], x2 + padding)
-            y2 = min(img.shape[0], y2 + padding)
-            
-            cropped_face = img[y1:y2, x1:x2]
-            cropped_faces.append(cropped_face)
+        embedding = face.normed_embedding
         
-        return cropped_faces
+        # Detailed embedding logs
+        logger.info(f"Extracted embedding shape: {embedding.shape}")
+        logger.info(f"Extracted embedding dtype: {embedding.dtype}")
+        logger.info(f"Embedding norm: {np.linalg.norm(embedding):.4f}")
+        logger.info(f"Embedding sample (first 10): {embedding[:10]}")
+        logger.info(f"Embedding has NaN: {np.isnan(embedding).any()}")
+        logger.info(f"Embedding has Inf: {np.isinf(embedding).any()}")
+        
+        return embedding
     
-    def extract_embedding_from_bytes(self, image_bytes: bytes) -> Optional[np.ndarray]:
-        """Extract embedding from bytes without async"""
+    def compare_embeddings(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
+        """Calculate cosine similarity between two embeddings."""
+        logger.info("Comparing embeddings...")
         
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        # Log input shapes
+        logger.info(f"Embedding1 shape: {embedding1.shape}, ndim: {embedding1.ndim}")
+        logger.info(f"Embedding2 shape: {embedding2.shape}, ndim: {embedding2.ndim}")
         
-        if img is None:
-            return None
+        # Both embeddings should be 1D (512,) from InsightFace
+        # No need to reshape if they're already 1D
         
-        faces = self.model.get(img)
+        # Calculate norms
+        norm1 = np.linalg.norm(embedding1)
+        norm2 = np.linalg.norm(embedding2)
+        logger.info(f"Norm1: {norm1:.6f}, Norm2: {norm2:.6f}")
         
-        if len(faces) == 0:
-            return None
+        if norm1 == 0 or norm2 == 0:
+            logger.error(f"Zero vector detected!")
+            return 0.0
         
-        face = faces[0]
-        return face.normed_embedding
+        # For 1D arrays, dot product gives a scalar
+        if embedding1.ndim == 1 and embedding2.ndim == 1:
+            similarity = np.dot(embedding1, embedding2) / (norm1 * norm2)
+            logger.info(f"1D similarity: {similarity:.6f}")
+            return float(similarity)
+        
+        # For 2D arrays, use sklearn
+        if embedding1.ndim == 1:
+            embedding1 = embedding1.reshape(1, -1)
+        if embedding2.ndim == 1:
+            embedding2 = embedding2.reshape(1, -1)
+        
+        similarity = cosine_similarity(embedding1, embedding2)
+        result = float(similarity[0][0])
+        logger.info(f"2D similarity: {result:.6f}")
+        
+        return result
+    
+    def _crop_face(self, img: np.ndarray, bbox: np.ndarray, padding: int = 10) -> np.ndarray:
+        """Crop face from image using bounding box."""
+        x1, y1, x2, y2 = bbox
+        h, w = img.shape[:2]
+        x1 = max(0, x1 - padding)
+        y1 = max(0, y1 - padding)
+        x2 = min(w, x2 + padding)
+        y2 = min(h, y2 + padding)
+        return img[y1:y2, x1:x2]
+    
+    def get_embedding_for_storage(self, embedding: np.ndarray) -> list:
+        """Convert embedding to format suitable for database storage."""
+        embedding_list = embedding.tolist()
+        logger.info(f"Converting embedding to storage. Length: {len(embedding_list)}")
+        logger.info(f"Storage sample (first 5): {embedding_list[:5]}")
+        return embedding_list
+    
+    def get_embedding_from_storage(self, stored_embedding: list) -> np.ndarray:
+        """Convert stored embedding back to numpy array."""
+        logger.info(f"Retrieving embedding from storage. Length: {len(stored_embedding)}")
+        embedding = np.array(stored_embedding)
+        logger.info(f"Retrieved embedding shape: {embedding.shape}, dtype: {embedding.dtype}")
+        logger.info(f"Retrieved embedding sample (first 5): {embedding[:5]}")
+        logger.info(f"Retrieved embedding norm: {np.linalg.norm(embedding):.4f}")
+        return embedding
