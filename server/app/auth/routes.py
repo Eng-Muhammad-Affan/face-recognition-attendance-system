@@ -39,7 +39,7 @@ face_service = FaceExtractor()
 
 # ============ PUBLIC ROUTES (No auth required) ============
 
-@router.post("/signup",  status_code=201)
+@router.post("/signup", status_code=201)
 async def signup(
     name: str = Form(...),
     email: str = Form(...),
@@ -47,43 +47,43 @@ async def signup(
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    print(name)
-    print(email)
-    print(department)
-    print(image)
-
+    # Check existing user
     existing_user = db.query(User).filter(User.email == email).first()
-    
     if existing_user:
-        logger.info(f"User Already Exists During Signup: {email}")
         raise HTTPException(status_code=409, detail="Email already registered")
     
-    """Register a new student with face image"""
+    try:
+        # ✅ Use the new embedding method
+        result = await face_service.extract_single_face_with_embedding(image)
+        
+        if result is None:
+            raise HTTPException(400, "No face detected")
+        
+        embedding = result['embedding']  # This is the 1D vector (512,)
+        
+        print(f"✅ Embedding shape: {embedding.shape}")  # (512,)
+        print(f"✅ Embedding dtype: {embedding.dtype}")  # float32
+        
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     
-    # STEP 1: Extract embedding from uploaded file
-    embedding = await face_service.extract_embedding_from_file(image)
-    
-    if embedding is None:
-        raise HTTPException(400, "No face detected")
-    
-    # STEP 2: Create user in database
+    # Create user
     new_user = User(
         registration_number=generate_registration_number(),
         name=name,
         email=email,
-        hashed_password="hashed_password_here"  # Add password hashing
+        department=department,  # ✅ Added missing field
     )
     db.add(new_user)
-    db.flush()  # Get user.id without committing
+    db.flush()
     
-    # STEP 3: Save embedding to pgvector
+    # Save embedding
     face_embedding = FaceEmbedding(
         student_id=new_user.id,
-        embedding=embedding.tolist()  # Convert numpy array to list
+        embedding=embedding.tolist()  # ✅ Convert to list for pgvector
     )
     db.add(face_embedding)
     
-    # STEP 4: Commit everything
     db.commit()
     db.refresh(new_user)
     
