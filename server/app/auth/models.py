@@ -15,11 +15,11 @@ class RoleEnum(str, enum.Enum):
     admin = "admin"
     user = "user"
 
-class AttendanceStatusEnum(str, enum.Enum):
-    present = "present"
-    absent = "absent"
-    late = "late"
-    leave = "leave"
+# class AttendanceStatusEnum(str, enum.Enum):
+#     present = "present"
+#     absent = "absent"
+#     late = "late"
+#     leave = "leave"
 
 # ==================== USER MODEL ====================
 class User(Base):
@@ -57,25 +57,3 @@ class FaceEmbedding(Base):
 
     def __repr__(self):
         return f"<FaceEmbedding student_id={self.student_id}>"
-
-
-# ==================== ATTENDANCE LOGS MODEL ====================
-class AttendanceLog(Base):
-    __tablename__ = 'attendance_logs'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    student_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    check_in_time = Column(TIMESTAMP, default=datetime.now)
-    date = Column(Date, default=date.today, nullable=False)
-    status = Column(Enum(AttendanceStatusEnum), default=AttendanceStatusEnum.present)
-    
-    # Unique constraint: One attendance per student per day
-    __table_args__ = (
-        UniqueConstraint('student_id', 'date', name='unique_student_attendance_per_day'),
-    )
-    
-    # Relationship
-    student = relationship("User", back_populates="attendance_logs")
-
-    def __repr__(self):
-        return f"<AttendanceLog {self.student_id} - {self.date}>"

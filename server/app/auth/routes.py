@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, Form , UploadFile, File
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from app.auth.models import User
-from app.auth.models import FaceEmbedding, AttendanceLog
+from app.auth.models import FaceEmbedding
+from app.logs.models import AttendanceLog
 from datetime import datetime
 import numpy as np
 from app.auth.generate_random import generate_registration_number 
@@ -174,7 +175,7 @@ async def mark_attendance(
         return {
             "status": "already_marked",
             "student_id": best_match,
-            "time": existing_attendance.time.isoformat() if existing_attendance.time else None
+            "check_in_time": existing_attendance.check_in_time.isoformat() if existing_attendance.check_in_time else None
         }
     
     now = datetime.now()

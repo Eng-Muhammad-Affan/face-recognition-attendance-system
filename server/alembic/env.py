@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.database import Base
 
 from app.auth.models import User
+from app.logs.models import AttendanceLog, AttendanceStatusEnum
 
 
 # Alembic Config

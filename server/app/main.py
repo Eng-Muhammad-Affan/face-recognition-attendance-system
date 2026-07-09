@@ -1,6 +1,7 @@
 ## ____ Product relatd routes ...
 
 from app.auth import routes as auth_routes
+from app.logs import routes as log_routes
 
 from fastapi import FastAPI
 
@@ -55,6 +56,7 @@ def health():
 
 # Your existing router inclusions continue below...
 app.include_router(auth_routes.router)
+app.include_router(log_routes.router)
 
 
 
