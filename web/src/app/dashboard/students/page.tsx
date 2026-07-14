@@ -1,7 +1,10 @@
-const StudentsPage = () => {
+import { DataTable } from "@/components/data-table"
+import data from "./data.json"
+
+const LogsPage = () => {
     return (
-         <div></div>
+         <DataTable data={data} />
     )
 }
 
-export default StudentsPage;
+export default LogsPage;

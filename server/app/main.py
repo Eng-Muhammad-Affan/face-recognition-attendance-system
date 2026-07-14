@@ -1,7 +1,7 @@
-## ____ Product relatd routes ...
-
+## ____ Routes ...
 from app.auth import routes as auth_routes
 from app.logs import routes as log_routes
+from app.users import routes as users_routes
 
 from fastapi import FastAPI
 
@@ -57,7 +57,7 @@ def health():
 # Your existing router inclusions continue below...
 app.include_router(auth_routes.router)
 app.include_router(log_routes.router)
-
+app.include_router(users_routes.router)
 
 
 @app.exception_handler(HTTPException)
@@ -65,7 +65,7 @@ async def custom_http_exception_handler(request: Request, exc: HTTPException):
     logger.error(f"ERROR {exc.status_code} at {request.url.path}: {exc.detail}")
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.detail}
+        content={"message": exc.detail}
     )
 
 

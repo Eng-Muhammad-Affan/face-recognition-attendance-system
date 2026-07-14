@@ -5,7 +5,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-
     <TooltipProvider>
       <SidebarProvider
         style={

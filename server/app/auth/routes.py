@@ -96,6 +96,13 @@ async def mark_attendance(
     image: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
+    current_time = datetime.now()
+    current_hour = current_time.hour
+    if current_hour == 18 and current_time.minute > 0:
+            return {
+        "message":"Sorry you're late"
+        }
+        
     # ✅ 1. Extract embedding from attendance image
     try:
         new_embedding = await face_service.extract_embedding(image)
