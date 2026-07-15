@@ -1,9 +1,13 @@
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <TooltipProvider>
       <SidebarProvider
@@ -27,6 +31,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
-
-  )
+  );
 }

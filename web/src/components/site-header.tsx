@@ -1,15 +1,18 @@
-"use client"
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { usePathname } from "next/navigation"
-import { useMemo } from "react"
+"use client";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
 export function SiteHeader() {
-  const pathname = usePathname()
+  const pathname = usePathname();
   const heading = useMemo(() => {
-    const arr = pathname.split("/")
-    return arr[arr.length - 1].slice(0,1).toUpperCase() + arr[arr.length - 1].slice(1).toLowerCase();
-  },[pathname]);
+    const arr = pathname.split("/");
+    return (
+      arr[arr.length - 1].slice(0, 1).toUpperCase() +
+      arr[arr.length - 1].slice(1).toLowerCase()
+    );
+  }, [pathname]);
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -22,5 +25,5 @@ export function SiteHeader() {
         <h1 className="text-base font-medium">{heading}</h1>
       </div>
     </header>
-  )
+  );
 }

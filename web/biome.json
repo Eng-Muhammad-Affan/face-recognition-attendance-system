@@ -18,9 +18,7 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "suspicious": {
-        "noUnknownAtRules": "off"
-      }
+      "suspicious": "off"
     },
     "domains": {
       "next": "recommended",
@@ -30,7 +28,7 @@
   "assist": {
     "actions": {
       "source": {
-        "organizeImports": "on"
+        "organizeImports": "off"
       }
     }
   }

@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check",
+    "lint": "biome check --max-diagnostics=400 --write --unsafe",
     "format": "biome format --write"
   },
   "dependencies": {

@@ -1,30 +1,30 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { SignupSchema } from "@/schema/signup"
-import z from "zod"
-import { useState, useRef } from "react"
-import { X } from "lucide-react"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SignupSchema } from "@/schema/signup";
+import type z from "zod";
+import { useState, useRef } from "react";
+import { X } from "lucide-react";
+import Image from "next/image";
 
-type SignupFormData = z.infer<typeof SignupSchema>
+type SignupFormData = z.infer<typeof SignupSchema>;
 const api_url = process.env.NEXT_PUBLIC_API_URL as string;
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [previewFileName, setPreviewFileName] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -35,58 +35,56 @@ export function SignupForm({
   } = useForm<SignupFormData>({
     resolver: zodResolver(SignupSchema),
     mode: "onChange",
-  })
+  });
 
-  const file = watch("file")
+  const _file = watch("file");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
       // Create preview URL
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-      setPreviewFileName(file.name)
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      setPreviewFileName(file.name);
       // ✅ FIX: Make sure to set the value correctly
-      setValue("file", file, { shouldValidate: true }) // Add shouldValidate
+      setValue("file", file, { shouldValidate: true }); // Add shouldValidate
     }
-  }
+  };
 
   const removeFile = () => {
     if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-      setPreviewUrl(null)
-      setPreviewFileName(null)
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      setPreviewFileName(null);
     }
     // ✅ FIX: Set to undefined instead of any
-    setValue("file", null, { shouldValidate: true })
+    setValue("file", null, { shouldValidate: true });
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   const onSubmit = async (data: SignupFormData) => {
     const formData = new FormData();
 
-    formData.append("name", data.name)
-    formData.append("email", data.email)
-    formData.append("department", data.department)
-    formData.append("image", data.file)
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("department", data.department);
+    formData.append("image", data.file);
 
     try {
-      const response = await fetch(`${api_url}/auth/signup`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${api_url}/auth/signup`, {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await response.json();
 
-    console.log(data)
-  } catch (err) {
-      console.log(err)
+      console.log(data);
+    } catch (err) {
+      console.log(err);
     }
-  }
+  };
 
   return (
     <form
@@ -153,7 +151,9 @@ export function SignupForm({
           <div className="w-20 h-20">
             {previewUrl ? (
               <div className="relative w-20 h-20">
-                <img
+                <Image
+                  width={100}
+                  height={100}
                   src={previewUrl}
                   alt="Profile preview"
                   className="w-full h-full object-cover rounded-sm border-2 border-gray-200"
@@ -190,7 +190,8 @@ export function SignupForm({
                       />
                     </svg>
                     <p className="mb-1 text-sm text-gray-500">
-                      <span className="font-semibold">Click to upload</span> or drag and drop
+                      <span className="font-semibold">Click to upload</span> or
+                      drag and drop
                     </p>
                     <p className="text-xs text-gray-500">
                       JPG, PNG, WEBP (Max 5MB)
@@ -210,7 +211,6 @@ export function SignupForm({
             )}
           </div>
 
-
           {errors.file && (
             <p className="text-sm text-red-500">{errors.file.message}</p>
           )}
@@ -228,5 +228,5 @@ export function SignupForm({
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }

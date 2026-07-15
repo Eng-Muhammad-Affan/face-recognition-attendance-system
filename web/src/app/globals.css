@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap");
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -42,7 +42,7 @@
 }
 
 @theme inline {
-   --font-google-sans: "Google Sans", sans-serif;
+  --font-google-sans: "Google Sans", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -86,7 +86,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -127,7 +126,7 @@
   }
 
   body {
-    @apply bg-background text-foreground ;
+    @apply bg-background text-foreground;
   }
 
   /* html {
