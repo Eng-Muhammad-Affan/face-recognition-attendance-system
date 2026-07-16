@@ -10,7 +10,7 @@ type Data = z.infer<typeof UserTableSchema>;
 
 const StudentsPage = () => {
   const [users, setUsers] = useState<Data[]>([]);
-  const [_loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -28,6 +28,9 @@ const StudentsPage = () => {
     fetchLogs();
   }, []);
 
+  if (loading) {
+    return null;
+  }
   return <DataTable data={users} />;
 };
 
