@@ -1,42 +1,31 @@
-const _users = [
+import {
+  LayoutDashboardIcon,
+  ListIcon,
+  UsersIcon,
+  Table
+} from "lucide-react";
+import React from "react";
+
+export const dashboardNavLinks = [
   {
-    registration_number: "535",
-    name: "Muhammad Affan",
-    role: "user",
-    joined_at: "2026-07-08T00:26:29.089837",
-    id: "cc67d34f-1d74-40cd-b9ef-a2d0c703159f",
-    email: "affanamir903@gmail.com",
-    department: "computer science",
-    is_active: true,
+    title: "Overview",
+    url: "/dashboard",
+    icon: LayoutDashboardIcon,
   },
   {
-    registration_number: "535",
-    name: "Muhammad Affan",
-    role: "user",
-    joined_at: "2026-07-08T00:26:29.089837",
-    id: "cc67d34f-1d74-40cd-b9ef-a2d0c702159f",
-    email: "affanamir903@gmail.com",
-    department: "computer science",
-    is_active: true,
+    title: "Attendance",
+    url: "/dashboard/attendance",
+    icon: Table,
   },
   {
-    registration_number: "535",
-    name: "Muhammad Affan",
-    role: "user",
-    joined_at: "2026-07-08T00:26:29.089837",
-    id: "cc67d34f-1d74-40cd-b9ef-54d0c703159f",
-    email: "affanamir903@gmail.com",
-    department: "computer science",
-    is_active: true,
+    title: "Logs",
+    url: "/dashboard/logs",
+    icon: ListIcon,
   },
   {
-    registration_number: "535",
-    name: "Muhammad Affan",
-    role: "user",
-    joined_at: "2026-07-08T00:26:29.089837",
-    id: "cc67d34f-1d74-40cd-b9ef-a2d0c703159f",
-    email: "affanamir903@gmail.com",
-    department: "computer science",
-    is_active: true,
+    title: "Students",
+    url: "/dashboard/students",
+    icon: UsersIcon,
   },
-];
+
+]

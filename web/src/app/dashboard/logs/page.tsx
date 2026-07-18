@@ -1,8 +1,8 @@
 "use client";
 
-import { BriefcaseIcon, Clock, User, Building2, Mail } from "lucide-react";
+import { BriefcaseIcon, Clock, User, Building2, Mail, Divide } from "lucide-react";
 import dayjs, { formatDate } from "@/lib/dayjs";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import axios from "axios";
 
 type AttendanceLog = {
@@ -48,24 +48,61 @@ const LoadingState = () => (
 );
 
 export default function LogsPage() {
+  // const footElement = useRef(null)
+
   const [logs, setLogs] = useState<AttendanceLog[]>([]);
   const [loading, setLoading] = useState(true);
+  // const [fetchData, setFetchData] = useState(false);
+  // const [paginationParams, setPaginationParams] = useState({
+  //   limit:30,
+  //   offset:0
+  // })
+
+
+  // const observer = useMemo(() => {
+  //   const callback = (entries: IntersectionObserverEntry[]) => {
+  //     entries.forEach((entry) => {
+  //       const isintersecting = entry.isIntersecting;
+  //       if (isintersecting) {
+  //         setFetchData(true)
+  //       }
+  //     })
+  //   }
+  //   return new IntersectionObserver(callback)
+  // }, []);
+
+  const fetchLogs = useCallback(async () => {
+    try {
+      const response = await axios.get("/logs.json");
+      setLogs(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch attendance logs:", error);
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [])
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const response = await axios.get("/logs.json");
-        setLogs(response.data || []);
-      } catch (error) {
-        console.error("Failed to fetch attendance logs:", error);
-        setLogs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // _____ Fetch logs ....
     fetchLogs();
-  }, []);
+
+    // // _____ Apply event listener to window to and start observing ....
+    // window.addEventListener("scroll", () => {
+    //   if (footElement.current) {
+    //     observer.observe(footElement.current)
+    //   }
+    // });
+
+    // return () => window.removeEventListener("scroll", () => { })
+  }, [])
+
+  // useEffect(() => {
+  //   if (fetchData) {
+  //     fetchLogs()
+  //   }
+
+  // }, [fetchData]);
 
   if (loading) {
     return <LoadingState />;
@@ -76,22 +113,21 @@ export default function LogsPage() {
   }
 
   return (
-    <section id="attendance-logs" className="min-h-screen text-black bg-white">
+    <section id="attendance-logs" className="h-screen overflow-y-scroll text-black bg-white">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         {/* Timeline */}
-        <ol className="relative ml-3 space-y-12 border-l-2 border-zinc-200">
+        <ol className="relative ml-1 md:ml-3 space-y-6 md:space-y-12 border-l-2 border-zinc-200">
           {logs.map((log, index) => {
             const isLatest = index === 0;
 
             return (
-              <li key={log.id} className="group relative pl-10">
+              <li key={log.id} className="group relative pl-5 md:pl-10">
                 {/* Timeline dot */}
                 <span
-                  className={`absolute -left-[15px] top-1 flex h-7 w-7 items-center justify-center rounded-full ring-4 ring-white transition-all duration-300 group-hover:scale-110 ${
-                    isLatest
-                      ? "bg-emerald-500 ring-emerald-500/20"
-                      : "bg-zinc-300 ring-zinc-300/20"
-                  }`}
+                  className={`absolute -left-[15px] top-1 flex h-7 w-7 items-center justify-center rounded-full ring-4 ring-white transition-all duration-300 group-hover:scale-110 ${isLatest
+                    ? "bg-emerald-500 ring-emerald-500/20"
+                    : "bg-zinc-300 ring-zinc-300/20"
+                    }`}
                 >
                   <BriefcaseIcon
                     size={13}
@@ -101,13 +137,13 @@ export default function LogsPage() {
                 </span>
 
                 {/* Card */}
-                <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-zinc-300 hover:shadow-md">
+                <div className="rounded-xl border border-zinc-200 bg-white p-3 md:p-6 shadow-sm transition-all duration-300 hover:border-zinc-300 hover:shadow-md">
                   {/* Header */}
                   <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-zinc-400" />
-                        <h3 className="text-lg font-semibold text-zinc-900">
+                        <h3 className="text-md md:text-lg font-semibold text-zinc-900">
                           {log.name}
                         </h3>
                       </div>
@@ -124,14 +160,14 @@ export default function LogsPage() {
 
                     {/* Status badge */}
                     <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ${getStatusColor(log.status)}`}
+                      className={`inline-flex items-center rounded-full px-3 py-0 md:py-1 text-xs font-medium ring-1 ${getStatusColor(log.status)}`}
                     >
                       {log.status}
                     </span>
                   </div>
 
                   {/* Department */}
-                  <div className="mt-3 flex items-center gap-2">
+                  <div className="mt-2 md:mt-3 flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-emerald-600" />
                     <p className="font-medium text-emerald-700">
                       {log.department}

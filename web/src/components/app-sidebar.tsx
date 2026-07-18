@@ -24,6 +24,7 @@ import {
   CommandIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { dashboardNavLinks } from "@/constants";
 
 const data = {
   user: {
@@ -31,23 +32,7 @@ const data = {
     email: "example@gmail.com",
     avatar: "/shadcn.jpg",
   },
-  navMain: [
-    {
-      title: "Overview",
-      url: "/dashboard",
-      icon: <LayoutDashboardIcon />,
-    },
-    {
-      title: "Logs",
-      url: "/dashboard/logs",
-      icon: <ListIcon />,
-    },
-    {
-      title: "Students",
-      url: "/dashboard/students",
-      icon: <UsersIcon />,
-    },
-  ],
+  navMain: dashboardNavLinks,
   navClouds: [
     {
       title: "Capture",

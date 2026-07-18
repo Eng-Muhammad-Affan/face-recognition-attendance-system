@@ -726,5 +726,21 @@
     "leave": 4,
     "late": 35,
     "date": "7/15/2026"
+  },
+  {
+    "id": 92,
+    "present": 42,
+    "absent": 142,
+    "leave": 4,
+    "late": 35,
+    "date": "7/16/2026"
+  },
+  {
+    "id": 93,
+    "present": 42,
+    "absent": 142,
+    "leave": 56,
+    "late": 2,
+    "date": "7/17/2026"
   }
 ]

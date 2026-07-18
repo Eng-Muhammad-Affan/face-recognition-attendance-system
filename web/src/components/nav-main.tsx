@@ -7,6 +7,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 export function NavMain({
@@ -15,7 +16,7 @@ export function NavMain({
   items: {
     title: string;
     url: string;
-    icon?: React.ReactNode;
+    icon: LucideIcon;
   }[];
 }) {
   return (
@@ -47,7 +48,7 @@ export function NavMain({
             <Link href={item.url} key={item.title}>
               <SidebarMenuItem>
                 <SidebarMenuButton tooltip={item.title}>
-                  {item.icon}
+                  <item.icon/>
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
