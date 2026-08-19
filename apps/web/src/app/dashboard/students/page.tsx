@@ -43,9 +43,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trash2, UserPlus, Users, Loader2 } from "lucide-react";
+import { Trash2, UserPlus, Users, Loader2, Pen } from "lucide-react";
 import { FormProvider, Controller } from "react-hook-form";
 import { useStudents } from "@/features/students/hooks";
+import Link from "next/link";
 
 export default function UserManagement() {
   const {
@@ -101,10 +102,12 @@ export default function UserManagement() {
             <Users className="h-6 w-6" />
             User Management
           </CardTitle>
-          <Button>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add User
-          </Button>
+          <Link href={"/"}>
+            <Button>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -127,6 +130,7 @@ export default function UserManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[300px]">User</TableHead>
+                    <TableHead className="w-[300px]">Reg. no</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Department</TableHead>
                     <TableHead>Role</TableHead>
@@ -149,10 +153,13 @@ export default function UserManagement() {
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
+                        {user.registration_number}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
                         {user.email}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{user.department[0]}</Badge>
+                        <Badge variant="outline">{user.department}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{user.role}</Badge>
@@ -173,18 +180,26 @@ export default function UserManagement() {
                         {dayjs(user.joined_at).format("MMM D, YYYY")}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsDrawerOpen(true)
+                          }}
+                        >
+                          <Pen className="h-4 w-4 text-black" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

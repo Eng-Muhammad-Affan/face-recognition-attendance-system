@@ -55,6 +55,9 @@ async def get_users(
                 "email": getattr(user, 'email', ''),
                 "role": getattr(user, 'role', ''),
                 "is_active": getattr(user, 'is_active', True),
+                "department": getattr(user, 'department', True),
+                "joined_at": getattr(user, 'joined_at', True),
+                "registration_number": getattr(user, 'registration_number', True),
                 # Add other fields as needed
             }
             for user in users

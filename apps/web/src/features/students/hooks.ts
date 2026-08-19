@@ -1,17 +1,19 @@
 import api from "@/lib/api";
 import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useToast } from "../../hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { StudentsFormSchema } from "./validations";
 import { z } from "zod"
 
-type UserData = z.infer<typeof StudentsFormSchema>
+type UserData = z.infer<typeof StudentsFormSchema> & {
+    registration_number: string;
+}
 
 const userService = {
     getUsers: async (): Promise<UserData[]> => {
-        const response = await axios.get("/users.json");
+        const response = await api.get("/users");
         return response.data;
     },
     updateUser: async (id: string, data: Partial<UserData>): Promise<UserData> => {
@@ -37,9 +39,28 @@ export const useStudents = () => {
 
     // Initialize react-hook-form
     const formMethods = useForm<UserData>({
-        resolver: zodResolver(StudentsFormSchema), //ignore
+        resolver: zodResolver(StudentsFormSchema),
         mode: "onChange",
+        defaultValues: {
+            id: selectedUser?.id,
+            name: selectedUser?.name,
+            email: selectedUser?.email,
+            role: selectedUser?.role,
+            is_active: selectedUser?.is_active,
+            department: selectedUser?.department,
+            joined_at: selectedUser?.joined_at,
+            registration_number: selectedUser?.registration_number,
+        }
     });
+
+    useEffect(() => {
+        const { setValue } = formMethods;
+        if (selectedUser) {
+            Object.entries(selectedUser).forEach(([key, value]) => {
+                setValue(key as keyof UserData, value)
+            })
+        }
+    }, [selectedUser])
 
     const { toast } = useToast();
     const { reset } = formMethods;

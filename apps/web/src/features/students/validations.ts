@@ -8,4 +8,5 @@ export const StudentsFormSchema = z.object({
     is_active: z.boolean(),
     joined_at:z.string(),
     role: z.enum(["admin", "user"]),
+    registration_number: z.string(),
 }).strict()
