@@ -2,7 +2,7 @@
 
 import { DataTable } from "@/components/data-table";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 import type { UserTableSchema } from "@/schema";
 import type z from "zod";
 
@@ -15,7 +15,7 @@ const StudentsPage = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await axios.get("/users.json");
+        const response = await api.get("/logs");
         setUsers(response.data || []);
       } catch (error) {
         console.error("Failed to fetch attendance logs:", error);

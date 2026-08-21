@@ -1,18 +1,20 @@
 
-# 🏍️ FastAPI E-Commerce Backend
-Ecommerce api built for techwagera ecommerce store.
+# 🏍️ Facetrack AI backend
+API built for Facetrack AI app.
 
 ---
 
 ## 🧱 Tech Stack
 
 * Python 3.14
-* FastAPI
+* FastAPI 
 * PostgreSQL
-* SQLAlchemy ORM
+* pgvector (for storing face features)
+* SQLAlchemy (ORM)
 * Alembic (migrations)
 * Pydantic (data validation)
-* Fast-mail (emailing and smtp client)
+* open cv (face crop and extraction) 
+* insight face with buffalo_1 model (for high accuracy facial recognition even on twin siblings)
 ---
 
 

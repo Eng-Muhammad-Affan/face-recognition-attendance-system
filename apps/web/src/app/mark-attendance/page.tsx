@@ -15,8 +15,8 @@ import { useMarkAttendance } from "@/features/mark-attendance";
 const MarkAttendancePage = () => {
 
   const {
-        videoRef,canvasRef, capturedImage, isCameraReady, isUploading, uploadStatus,handleCapture, handleRetake, 
-    } = useMarkAttendance();
+    videoRef, canvasRef, capturedImage, isCameraReady, isUploading, uploadStatus, handleCapture, handleRetake,
+  } = useMarkAttendance();
 
   return (
     <div className="h-screen w-full bg-black text-gray-100 flex flex-col justify-between overflow-hidden">

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import dayjs from "@/lib/dayjs"
 
 export const useMarkAttendance = () => {
     const api_url = process.env.NEXT_PUBLIC_API_URL as string;
@@ -92,6 +93,7 @@ export const useMarkAttendance = () => {
             if (blob) {
                 const formData = new FormData();
                 formData.append("image", blob, "attendance-photo.jpg");
+                formData.append("timestamp", dayjs().toISOString() );
                 await uploadToServer(formData);
             }
         }, "image/jpeg");

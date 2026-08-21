@@ -83,7 +83,6 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
 import {
   GripVerticalIcon,
   EllipsisVerticalIcon,
@@ -95,12 +94,12 @@ import {
   ChevronRightIcon,
   ChevronsRightIcon,
   UserIcon,
-  MailIcon,
   BuildingIcon,
   CalendarIcon,
   ShieldIcon,
   SearchIcon,
   XIcon,
+  HashIcon,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -167,14 +166,16 @@ const columns: ColumnDef<z.infer<typeof UserTableSchema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <MailIcon className="size-3.5" />
-        <span className="truncate max-w-[200px]">{row.original.email}</span>
-      </div>
-    ),
+    accessorKey: "registration_number",
+    header: "Registration No.",
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <HashIcon className="size-3.5" />
+          <span>{row.original.registration_number}</span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",
@@ -202,13 +203,13 @@ const columns: ColumnDef<z.infer<typeof UserTableSchema>>[] = [
     },
   },
   {
-    accessorKey: "joined_at",
-    header: "Joined",
+    accessorKey: "check_in_time",
+    header: "Check in",
     cell: ({ row }) => {
       return (
         <div className="flex items-center gap-2 text-muted-foreground">
           <CalendarIcon className="size-3.5" />
-          <span>{dayjs(row.original.joined_at).format("MMM D, YYYY")}</span>
+          <span>{dayjs(row.original.check_in_time).format("MMM D, YYYY")}</span>
         </div>
       );
     },
@@ -226,6 +227,18 @@ const columns: ColumnDef<z.infer<typeof UserTableSchema>>[] = [
           >
             {row.original.role.toUpperCase()}
           </Badge>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "department",
+    header: "Department",
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <BuildingIcon className="size-3.5" />
+          <span>{row.original.department}</span>
         </div>
       );
     },
@@ -255,10 +268,10 @@ const columns: ColumnDef<z.infer<typeof UserTableSchema>>[] = [
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
-              toast.success(`Email sent to ${row.original.email}`);
+              toast.success(`Attendance marked for ${row.original.name}`);
             }}
           >
-            Send Email
+            Mark Attendance
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -343,7 +356,7 @@ export function DataTable({
       filtered = filtered.filter((item) => {
         return (
           item.name.toLowerCase().includes(searchTerm) ||
-          item.email.toLowerCase().includes(searchTerm) ||
+          item.registration_number.toLowerCase().includes(searchTerm) ||
           item.role.toLowerCase().includes(searchTerm) ||
           item.department.toLowerCase().includes(searchTerm) ||
           item.status.toLowerCase().includes(searchTerm)
@@ -572,9 +585,9 @@ export function DataTable({
                           {header.isPlaceholder
                             ? null
                             : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
                         </TableHead>
                       );
                     })}
@@ -701,7 +714,16 @@ function TableCellViewer({ item }: { item: z.infer<typeof UserTableSchema> }) {
     <Drawer>
       <DrawerTrigger className="w-fit px-0 text-left text-foreground hover:no-underline">
         <div className="flex items-center gap-3">
-          <span>{item.name}</span>
+          {/* <Avatar className="size-8">
+            <AvatarImage src={`https://avatar.vercel.sh/${item.name}.png`} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar> */}
+          <div className="flex flex-col">
+            <span className="font-medium">{item.name}</span>
+            {/* <span className="text-xs text-muted-foreground">
+              {item.registration_number}
+            </span> */}
+          </div>
         </div>
       </DrawerTrigger>
       <DrawerContent>
@@ -711,7 +733,12 @@ function TableCellViewer({ item }: { item: z.infer<typeof UserTableSchema> }) {
               <AvatarImage src={`https://avatar.vercel.sh/${item.name}.png`} />
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
-            {item.name}
+            <div className="flex flex-col">
+              <span>{item.name}</span>
+              <span className="text-sm font-normal text-muted-foreground">
+                {item.registration_number}
+              </span>
+            </div>
           </DrawerTitle>
           <DrawerDescription>User Details and Settings</DrawerDescription>
         </DrawerHeader>
@@ -730,13 +757,6 @@ function TableCellViewer({ item }: { item: z.infer<typeof UserTableSchema> }) {
                 >
                   {item.status}
                 </Badge>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <MailIcon className="size-4 text-muted-foreground" />
-              <div className="flex-1">
-                <Label className="text-xs text-muted-foreground">Email</Label>
-                <p className="font-medium">{item.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -760,9 +780,20 @@ function TableCellViewer({ item }: { item: z.infer<typeof UserTableSchema> }) {
             <div className="flex items-center gap-2">
               <CalendarIcon className="size-4 text-muted-foreground" />
               <div className="flex-1">
-                <Label className="text-xs text-muted-foreground">Joined</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Check-in Time
+                </Label>
                 <p className="font-medium">
-                  {dayjs(item.joined_at).format("MMMM D, YYYY")}
+                  {dayjs(item.check_in_time).format("MMMM D, YYYY HH:mm")}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="size-4 text-muted-foreground" />
+              <div className="flex-1">
+                <Label className="text-xs text-muted-foreground">Date</Label>
+                <p className="font-medium">
+                  {dayjs(item.date).format("MMMM D, YYYY")}
                 </p>
               </div>
             </div>
@@ -774,8 +805,13 @@ function TableCellViewer({ item }: { item: z.infer<typeof UserTableSchema> }) {
               <Input id="name" defaultValue={item.name} />
             </div>
             <div className="flex flex-col gap-3">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue={item.email} />
+              <Label htmlFor="registration_number">
+                Registration Number
+              </Label>
+              <Input
+                id="registration_number"
+                defaultValue={item.registration_number}
+              />
             </div>
             <div className="flex flex-col gap-3">
               <Label htmlFor="department">Department</Label>
@@ -812,10 +848,6 @@ function TableCellViewer({ item }: { item: z.infer<typeof UserTableSchema> }) {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch defaultChecked={item.is_active} id="is_active" />
-              <Label htmlFor="is_active">Active User</Label>
             </div>
           </form>
         </div>

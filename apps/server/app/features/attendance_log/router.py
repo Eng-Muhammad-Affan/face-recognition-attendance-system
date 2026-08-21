@@ -1,31 +1,19 @@
-# app/api/auth_router.py
-from fastapi import APIRouter, Depends, HTTPException, Form , UploadFile, File
-from sqlalchemy.orm import Session
-from app.core.database import SessionLocal
-from app.auth.models import User
-from app.auth.models import FaceEmbedding
-from app.logs.models import AttendanceLog
+#  ______ libraries ...
+from fastapi import APIRouter, Depends, HTTPException, Form , UploadFile, File, status
+from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
 import numpy as np
-from app.auth.generate_random import generate_registration_number 
 
-# from app.auth.utils import (
-#     verify_password,
-#     create_access_token,
-#     hash_password,
-#     set_token_cookie,
-#     remove_token_cookie,
-#     require_auth,
-#     create_reset_token,
-#     verify_reset_token,
-#     send_reset_email,
-# )
+#  ______ Config ...
+from app.core.database import SessionLocal
 
+#  ______ Utils  ...
 from app.core.logger import logger
 
-from app.services.face_service import FaceService 
+#  ______ Modules ...
+from app.logs.models import AttendanceLog, AttendanceStatusEnum
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+#  ______ startup ...
 
 def get_db():
     db = SessionLocal()
@@ -34,70 +22,56 @@ def get_db():
     finally:
         db.close()
 
-face_service = FaceService()
+router = APIRouter(prefix="/attendance", tags=["Attendance logs"])
 
 
-# ============ PUBLIC ROUTES (No auth required) ============
+# ============ LOGS ROUTES ============
 
-@router.post("/signup", status_code=201)
-async def signup(
-    name: str = Form(...),
-    email: str = Form(...),
-    department: str = Form(...),
-    image: UploadFile = File(...),
+
+@router.get("/", status_code=status.HTTP_200_OK)
+async def get_attendance_logs(
     db: Session = Depends(get_db)
 ):
-    # ✅ 1. Check if user already exists
-    existing_user = db.query(User).filter(User.email == email).first()
-    if existing_user:
-        raise HTTPException(409, "Email already registered")
-    
-    # ✅ 2. Extract embedding from uploaded image
+    """Get attendance logs with student details"""
     try:
-        embedding = await face_service.extract_embedding(image)
-        # This already validates: exactly 1 face, no multiple faces
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    
-    # ✅ 3. Create user in database
-    new_user = User(
-        registration_number=generate_registration_number(),
-        name=name,
-        email=email,
-        department=department
-    )
-    db.add(new_user)
-    db.flush()  # Get user.id without committing
-    
-    # ✅ 4. Convert embedding to list for pgvector
-    embedding_list = face_service.get_embedding_for_storage(embedding)
-    
-    # ✅ 5. Store embedding in database
-    face_embedding = FaceEmbedding(
-        student_id=new_user.id,
-        embedding=embedding_list
-    )
-    db.add(face_embedding)
-    
-    # ✅ 6. Commit everything
-    db.commit()
-    db.refresh(new_user)
-    
-    # ✅ 7. Return response
-    return {
-        "status": "success",
-        "student_id": new_user.id,
-        "registration_number": new_user.registration_number,
-        "name": new_user.name
-    }
+        # Use joinedload to eagerly load the student relationship
+        logs = db.query(AttendanceLog).options(
+            joinedload(AttendanceLog.student)
+        ).filter()
+        
+        # Convert to list of dictionaries for JSON serialization
+        logs_list = [
+            {
+                "id": str(log.id),
+                "name": f"{log.student.name}" if log.student else None,
+                "registration_number": log.student.registration_number if log.student else None,
+                "role": log.student.role if log.student else None,
+                "department": log.student.department if log.student else None,
+                "check_in_time": log.check_in_time.isoformat() if log.check_in_time else None,
+                "date": log.date.isoformat() if log.date else None,
+                "status": log.status.value if log.status else None,
+            }
+            for log in logs
+        ]
+        
+        return logs_list
+    except Exception as e:
+        logger.error(f"Error fetching logs: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch logs"
+        )
+
 
 @router.post("/mark-attendance")
 async def mark_attendance(
     image: UploadFile = File(...),
+    timestamp:str = Form(...),
     db: Session = Depends(get_db)
 ):
-    current_time = datetime.now()
+    current_time = parser.parse(timestamp)
     current_hour = current_time.hour
+    
     if current_hour == 18 and current_time.minute > 0:
             return {
         "message":"Sorry you're late"
@@ -172,7 +146,8 @@ async def mark_attendance(
         )
     
     # ✅ 5. Check if already marked attendance today
-    today = datetime.now().date()
+    today = parser.parse(timestamp)
+
     existing_attendance = db.query(AttendanceLog).filter(
         AttendanceLog.student_id == best_match,
         AttendanceLog.date == today
